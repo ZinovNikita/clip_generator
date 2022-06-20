@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clip Generator</title>
+</head>
+<body>
+	<audio class="audio" id="audio"></audio>
+  <video class="bg" id="bg" muted></video>
+  <video class="video hide" id="video"></video>
+  <canvas id="canvas" height="100"></canvas>
+	<button id="button">&gt;</button>
+<script>
+const btn = document.getElementById('button');
+const bg = document.getElementById('bg');
+const vdo = document.getElementById('video');
+const ado = document.getElementById('audio');
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const context = new (window.AudioContext || window.webkitAudioContext)();
+const analyser = context.createAnalyser();
+const setControl = (p,s,c='x')=>{
+  const fx = ()=>{
+    fetch('/videos_delete');
+    p.src = `/${s}/${new Date().getTime()}`;
+  };
+  p.addEventListener('ended',fx);
+  p.addEventListener('error',fx);
+  p.addEventListener('canplay', ()=>{
+    p.play();
+    p.classList.remove(c)
+  });
+  p.addEventListener('timeupdate', (...a)=>{
+    if(p.duration-p.currentTime < 3)
+      p.classList.add(c)
+  });
+  p.dispatchEvent(new Event('ended'));
+}
+window.addEventListener('resize',()=>{
+  bg.setAttribute('width',window.innerWidth);
+  bg.setAttribute('height',window.innerHeight);
+  vdo.setAttribute('width',window.innerWidth);
+  vdo.setAttribute('height',window.innerHeight);
+  canvas.setAttribute('width',window.innerWidth);
+  canvas.setAttribute('height',window.innerHeight/6);
+})
+btn.addEventListener('click',()=>{
+  btn.style.display = 'none';
+  window.dispatchEvent(new Event('resize'));
+  setControl(ado,'audios');
+  setControl(bg,'bg');
+  setControl(vdo,'videos','hide');
+});
+ado.addEventListener('loadedmetadata',()=>{
+  const source = context.createMediaElementSource(ado);
+  source.connect(analyser);
+  analyser.connect(context.destination);
+  context.resume().then(() => {
+    console.log('Playback resumed successfully');
+    drawCanvas()
+    console.log(analyser);
+  });
+});
+const hexcolor = (h) => {
+  return `rgb(${h},0,${255-h})`;
+}
+const drawCanvas = () => {
+  let w = Math.round(canvas.width), frequencyArray = new Uint8Array(w);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  analyser.getByteTimeDomainData(frequencyArray);
+  for(var i = 0; i < w;i+=3){
+    ctx.strokeStyle = hexcolor(frequencyArray[i]);
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(i, canvas.height);
+    ctx.lineTo(i, canvas.height*(1-frequencyArray[i]/256));
+    ctx.stroke();
+  }
+  requestAnimationFrame(drawCanvas);
+}
+</script>
+<style>
+body{
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+  background-color: black;
+  vertical-align: middle;
+}
+.audio{
+  display:none;
+  z-index:0;
+}
+.bg{
+  position: fixed;
+  top:0;
+  left:0;
+  background-position: center center;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  z-index:1;
+  object-fit: cover;
+}
+.video{
+  position: fixed;
+  background: none;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  z-index:2;
+  object-fit: cover;
+  transition: 3s linear;
+  opacity: 1;
+}
+.video.hide {
+  opacity: 0;
+}
+#canvas{
+  position: fixed;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  z-index:3;
+  bottom: 0;
+  left: 0;
+  opacity: 0.5;
+  mix-blend-mode: hard-light;
+}
+#button{
+  position: fixed;
+  top: calc(50vh - 25px);;
+  left: calc(50vw - 25px);
+  width: 50px;
+  height: 50px;
+  font-size: 30px;
+  font-weight: bold;
+  z-index:3;
+}
+</style>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+    "port": 3000,
+    "bg_path": "full/path/to/bg_video/folder",
+    "video_path": "full/path/to/video/folder",
+    "chunck_path": "full/path/to/chunck/folder",
+    "audio_path": "full/path/to/music/folder"
+}
