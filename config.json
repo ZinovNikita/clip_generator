@@ -1,7 +1,7 @@
 {
     "port": 3000,
-    "bg_path": "C:/Users/zinov/Documents/nodejs/videotobpm/bg",
-    "video_path": "D:/Видео/P",
-    "chunck_path": "D:/Видео/chunck",
-    "audio_path": "D:/Видео/Top100"
+    "bg_path": "full/path/to/bg_video/folder",
+    "video_path": "full/path/to/video/folder",
+    "chunck_path": "full/path/to/chunck/folder",
+    "audio_path": "full/path/to/music/folder"
 }
